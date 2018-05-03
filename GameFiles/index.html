@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="./node_modules/phaser/dist/phaser.js"></script>
+    <script type="text/javascript" src="./controller.js"></script>
+    <script type="text/javascript" src="./bubbles.js"></script>
+    <script type="text/javascript" src="./perlinNoise.js"></script>
+    <script type="text/javascript" src="./list_utils.js"></script>
+    <script type="text/javascript" src="./utils.js"></script>
+    <script type="text/javascript" src="./Player.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <style>
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: black;
+        }
+
+        canvas {
+            /*height: 100%;*/
+            width: 100%;
+        }
+
+        /*#gameCanvas {
+            margin: 0 auto;
+        }
+        
+        canvas:-webkit-full-screen {
+            width: 100% !important;
+        }
+
+        canvas:-moz-full-screen {
+            width: 100% !important;
+        }
+
+        canvas:-ms-fullscreen {
+            width: 100% !important;
+        }
+
+        canvas:fullscreen{
+            width: 100% !important;
+        }
+
+        :-webkit-full-screen-document {
+          
+        }
+
+        :-webkit-full-screen:not(:root) {
+          width: 90% !important;
+          float: none !important;
+        }
+        :-webkit-full-screen video {
+          width: 100%;
+        }
+        :-webkit-full-screen .tohide {
+          display: none;
+        }
+        :-moz-full-screen:not(:root) {
+          width: 90% !important;
+          float: none !important;
+        }
+        :-moz-full-screen #fs-inner {
+          display: table-cell;
+          vertical-align: middle;
+        }
+        :-moz-full-screen #fs {
+          width: 90%;
+          margin: auto;
+        }
+        :-moz-full-screen video {
+          width: 100%;
+        }
+        :-moz-full-screen .tohide {
+          display: none;
+        }
+        #gameCanvas:-moz-full-screen {
+          display: table;
+          margin: auto;
+          float: none;
+          width: 100%;
+          height: 100%;
+        }
+        #gameCanvas {
+          float: right;
+        }*/
+
+        button {
+            color: blue;
+            display: inline-block;
+            font_size: 90pt;
+            padding: 20px;
+            margin:20px;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- <div id="fs-container"> -->
+        <canvas id="gameCanvas" onclick="goFullscreen()"></canvas>
+        <!-- <canvas id="gameCanvas" style="display: block; touch-action: one; user-select:none; "></canvas> -->
+    <!-- </div> -->
+    <!-- <button id="button" onclick="goFullscreen()">Toggle fullscreen</button> -->
+    
+
+    <!-- Hook into the window resize for fullscreen and canvas resize -->
+    <script>
+
+        function resizeApp() {
+
+            var canvas = $('canvas')[0];
+            canvas.width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+            canvas.height = (window.innerHeight > 0) ? window.innerHeight : screen.height;
+
+            
+            phaserGame.resize(canvas.width,canvas.height);
+            controller.Resize();
+
+        }
+        window.addEventListener('resize', resizeApp );
+
+        function goFullscreen() {
+
+            // var el = $('canvas')[0];
+            var el = $('#gameCanvas')[0];
+            $('canvas')[0].focus();
+            if ( el.webkitRequestFullscreen ) {
+                el.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+            } else {
+                if ( el.mozRequestFullScreen) {
+                    el.mozRequestFullScreen();
+                } else {
+                    el.requestFullscreen();
+                }
+            }
+        } 
+
+        window.addEventListener('focus', function(e) {
+            console.log("Window focused");
+            var el = $('#gameCanvas')[0];
+            $('canvas')[0].focus();
+        } );
+    </script>
+
+    <script>
+        // var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+        // var height = (window.innerHeight > 0) ? window.innerHeight : screen.height;
+        var width = screen.width;
+        var height = screen.height;
+
+    var config = {
+        type: Phaser.AUTO,
+        parent: "fs-container",
+        canvas: $('canvas')[0],
+        width: width * window.devicePixelRatio,
+        height: height * window.devicePixelRatio,
+        // autoResize: true,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { y: 0 }
+            }
+        },
+        scene: {
+            preload: preload,
+            create: create,
+            update: update
+        },
+        input: {
+            gamepad: true
+        }
+    };
+
+    var phaserGame = new Phaser.Game(config);
+
+    var player;
+    var shadow;
+    var graphics;
+
+    
+
+    var bubble,
+        bubbles;
+
+    var obstacles;
+
+    var controller;
+
+    function preload () {
+
+        this.load.image('ground', 'assets/platform.png');
+        this.load.image('blue_circle', 'assets/blue_circle.png');
+        this.load.image('tree_green', 'assets/tree_sprite.png');
+        this.load.spritesheet('dude', 'assets/dude.png',
+            { frameWidth: 32, frameHeight: 48 }
+        );
+        this.load.spritesheet('melina', 'assets/Melina.png',
+            { frameWidth: 223/4, frameHeight: 336/4 }
+        );
+
+        this.load.spritesheet('grass_plains', 'assets/alisachristopher-pixel_terrain.png',
+            { frameWidth: 256/8, frameHeight: 480/15}
+        );
+
+    }
+
+    function create () {
+
+        this.obstacles = this.physics.add.staticGroup();
+
+        // platforms.create(400, 568, 'ground').setScale(2).refreshBody;
+
+        // platforms.create(600, 400, 'ground');
+        // platforms.create(50, 250, 'ground');
+        // platforms.create(750, 220, 'ground');
+
+        Player.Create(this);
+        
+        
+
+        // console.log(graphics);
+        
+        // let g = this.make.graphics();
+
+
+        // rock.body.updateCenter();
+        // console.log(rock);
+        // console.log(rock.body);
+
+        // g.depth = 99999999;
+        // g.fillCircle(600,400,20);
+
+
+//        player.setBounce(0.2);
+        // player.setCollideWorldBounds(true);
+
+        
+
+
+        controller = new Controller(this);
+
+//        player.body.setGravityY(300);
+
+        this.physics.add.collider(Player._sprite, this.obstacles);
+        // console.log(this);
+        // $('canvas')[0].addEventListener('click', goFullscreen);
+
+        // this.input.on('pointerdown', goFullscreen, this);
+
+        
+
+        this.bubbles = new Bubbles(this);
+        // console.log(bubbles);
+        this.bubble = this.bubbles.Add();
+        this.bubble.AddPlayer(Player._sprite);
+
+        
+        var el = $('#gameCanvas')[0];
+        $('canvas')[0].focus();
+    }
+    function update () {
+        Player.Update();
+        controller.Update();
+        this.bubble.Update();
+        // console.log(game);
+
+        // this.cameras.main.scrollX = player.x - game.canvas.width * 0.5;
+        // this.cameras.main.scrollY = player.y - game.canvas.height * 0.5;
+    }
+        
+    
+
+    
+    
+    </script>
+
+</body>
+</html>
