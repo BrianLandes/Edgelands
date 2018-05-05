@@ -3,11 +3,13 @@
 <head>
     <script src="./node_modules/phaser/dist/phaser.js"></script>
     <script type="text/javascript" src="./controller.js"></script>
+    <script type="text/javascript" src="./LevelGenerator.js"></script>
     <script type="text/javascript" src="./bubbles.js"></script>
     <script type="text/javascript" src="./perlinNoise.js"></script>
     <script type="text/javascript" src="./list_utils.js"></script>
     <script type="text/javascript" src="./utils.js"></script>
     <script type="text/javascript" src="./Player.js"></script>
+    <script type="text/javascript" src="./Bullets.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <style>
 
@@ -174,8 +176,7 @@
     var phaserGame = new Phaser.Game(config);
 
     var player;
-    var shadow;
-    var graphics;
+    var bullets;
 
     
 
@@ -186,14 +187,16 @@
 
     var controller;
 
+    var deltaTime,
+        lastTime;
+
     function preload () {
 
-        this.load.image('ground', 'assets/platform.png');
         this.load.image('blue_circle', 'assets/blue_circle.png');
+        this.load.image('bullet', 'assets/bullet_01.png');
         this.load.image('tree_green', 'assets/tree_sprite.png');
-        this.load.spritesheet('dude', 'assets/dude.png',
-            { frameWidth: 32, frameHeight: 48 }
-        );
+        this.load.image('tree_purple', 'assets/tree_sprite_02.png');
+
         this.load.spritesheet('melina', 'assets/Melina.png',
             { frameWidth: 223/4, frameHeight: 336/4 }
         );
@@ -207,16 +210,18 @@
     function create () {
 
         this.obstacles = this.physics.add.staticGroup();
-
+        this.bullets = this.physics.add.group();
+        // console.log(this.bullets);
         // platforms.create(400, 568, 'ground').setScale(2).refreshBody;
 
         // platforms.create(600, 400, 'ground');
         // platforms.create(50, 250, 'ground');
         // platforms.create(750, 220, 'ground');
 
-        Player.Create(this);
+        player = new Player(this);
+        bullets = new Bullets(this);
         
-        
+        lastTime = this.time.now;
 
         // console.log(graphics);
         
@@ -241,7 +246,7 @@
 
 //        player.body.setGravityY(300);
 
-        this.physics.add.collider(Player._sprite, this.obstacles);
+        this.physics.add.collider(player._sprite, this.obstacles);
         // console.log(this);
         // $('canvas')[0].addEventListener('click', goFullscreen);
 
@@ -252,18 +257,21 @@
         this.bubbles = new Bubbles(this);
         // console.log(bubbles);
         this.bubble = this.bubbles.Add();
-        this.bubble.AddPlayer(Player._sprite);
+        this.bubble.AddPlayer(player);
 
         
         var el = $('#gameCanvas')[0];
         $('canvas')[0].focus();
     }
     function update () {
-        Player.Update();
+        deltaTime = (this.time.now - lastTime)/1000;
+        lastTime = this.time.now;
+        player.Update();
         controller.Update();
         this.bubble.Update();
         // console.log(game);
-
+        bullets.Update();
+        
         // this.cameras.main.scrollX = player.x - game.canvas.width * 0.5;
         // this.cameras.main.scrollY = player.y - game.canvas.height * 0.5;
     }

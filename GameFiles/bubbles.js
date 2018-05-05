@@ -31,6 +31,7 @@ class Bubble {
 		this.tilesByX = {};
 		this.tilesByY = {};
 		this.noise = new SimplexNoise();
+		this.levelGenerator = new LevelGenerator(this);
 
 	}
 
@@ -90,10 +91,10 @@ class Bubble {
 		tile.scaleX = tile.scaleY = gridToScreen/32 + 0.05;
 		tile.depth = -100000000;
 		// tile.recycle = false;
-		tile.type = this.noise.noise(x,y);
+		tile.type = this.noise.noise((x+0.5) * gridToScreen,(y+0.5) * gridToScreen);
 		if ( tile.type > 0 ) {
 			tile.anims.play('grass', true);
-			this.GenerateObstacles(tile);
+			// this.GenerateObstacles(tile);
 		} else {
 			tile.anims.play('dirt', true);
 		}
@@ -137,6 +138,7 @@ class Bubble {
 
 		this.UpdateTiles();
 		this.UpdateObjects();
+		this.levelGenerator.Update();
 	}
 
 	UpdateTiles() {
@@ -227,15 +229,15 @@ class Bubble {
 
 	UpdateObjects() {
 		// console.log(this.gameObjects);
-		// for( let i = 0; i < this.gameObjects.length; i++ ) {
-		// 	let gameObject = this.gameObjects[i];
-		// 	let d = this.DistanceToClosestPlayer(gameObject);
-		// 	if  ( d > this.radius * 2.5 ) {
-		// 		// console.log(gameObject);
-		// 		gameObject.destroy();
+		for( let i = 0; i < this.gameObjects.length; i++ ) {
+			let gameObject = this.gameObjects[i];
+			let d = this.DistanceToClosestPlayer(gameObject);
+			if  ( d > this.radius * 6 ) {
+				// console.log(gameObject);
+				gameObject.destroy();
 				
-		// 	}
-		// }
+			}
+		}
 	}
 
 	GenerateObstacles( tile ) {
@@ -253,6 +255,33 @@ class Bubble {
         tile.obstacles.push( tree );
         // this.gameObjects.push( tree );
 
+	}
+
+	NewObstacle( x, y, key ) {
+		if ( key==undefined){
+			key = 'tree_green';
+		}
+		let tree = this.game.obstacles.create( x, y, key);
+
+		tree.s = 1 + this.noise.noise(x,y)*0.5;
+
+
+        tree.setScale(3 * tree.s);
+        tree.setOrigin(0.5,0.6);
+        tree.body.setCircle(50 * tree.s);
+        tree.body.setOffset(-25 * tree.s + tree.originX * tree.width,-25 * tree.s + tree.originY * tree.height);
+        tree.depth = tree.y;
+
+        // tile.obstacles.push( tree );
+        this.gameObjects.push( tree );
+
+        return tree;
+
+	}
+
+	RemoveObstacle( tree ) {
+		tree.destroy();
+		list_utils.Remove(this.gameObjects,tree);
 	}
 
 	TransformScreenToGrid( screenScalar ) {

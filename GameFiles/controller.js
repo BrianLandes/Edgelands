@@ -52,6 +52,7 @@ class Controller {
 
         });
 
+        // ------------ Virtual Stick Config ----------------
         this.gamepadIsOn = false;
         this.virtualStickIsOn = false;
 
@@ -62,7 +63,33 @@ class Controller {
             this._ShowVirtualSticks();
         }
         
+        // --------------- Mouse Config ----------------
+        this.mouseIsDown = false;
+        this.useMouse = true;
+        this.game.input.on('pointerdown', function(pointer) {
+            this.mouseIsDown = true;
+            this.useMouse = true;
+        }, this);
+        this.game.input.on('pointerup', function(pointer) {
+            this.mouseIsDown = false;
+            this.useMouse = true;
+        }, this);
 
+        // --------------- Keyboard config-----------------
+        this.keyDownA = false;
+        this.keyDownW = false;
+        this.keyDownS = false;
+        this.keyDownD = false;
+        this.game.input.keyboard.on('keydown', function (event) {
+            this._HandleKeyboardEvent(event.key,event.type);
+            
+
+        }, this);
+
+        this.game.input.keyboard.on('keyup', function (event) {
+            this._HandleKeyboardEvent(event.key,event.type);
+
+        }, this);
 
     }
 
@@ -75,13 +102,17 @@ class Controller {
             // } else if ( this.isMobile ) {
             //     this._ShowVirtualSticks();
             }
+            this.useMouse = false;
         } else {
             if ( this.virtualStickIsOn ) {
                 this._RepositionVirtualSticks();
+            } else {
+                if (this.cursors.left.isDown || this.cursors.right.isDown || this.cursors.up.isDown | this.cursors.down.isDown) {
+                    this.useMouse = false;
+                }
             }
         }
 
-        
         
     }
 
@@ -111,6 +142,54 @@ class Controller {
                 y = this.gamepad.axes[1].getValue();
             }
         } else {
+            if (this.keyDownA) {
+                x = -1.0;
+            }
+            else if (this.keyDownD) {
+                x = 1.0;
+            } else {
+                x = 0.0;
+            }
+            if (this.keyDownW) {
+                y = -1.0;
+            }
+            else if (this.keyDownS) {
+                y = 1.0;
+            }
+            else {
+               y = 0.0;
+            }
+        }
+
+        if ( x==0 && y ==0 ) {
+            return {
+                x: x,
+                y: y,
+                m: 0
+            };
+        }
+        return utils.UnitVector(x,y);
+    }
+
+    get AimAxis() {
+        if ( this.useMouse ) {
+
+            let v = this.game.cameras.main.getWorldPoint(this.game.input.x,this.game.input.y);
+            let px = player.x;
+            let py = player.y;
+
+            if ( v.x-px == 0 && v.y-py == 0 ) {
+                return {
+                    x: 0,
+                    y: 0,
+                    m: 0
+                };
+            }
+
+            return utils.UnitVector(v.x-px,v.y-py);
+        } else {
+            let x = 0;
+            let y = 0;
             if (this.cursors.left.isDown) {
                 x = -1.0;
             }
@@ -128,12 +207,23 @@ class Controller {
             else {
                y = 0.0;
             }
+            if ( x==0 && y ==0 ) {
+                return {
+                    x: x,
+                    y: y,
+                    m: 0
+                };
+            }
+            return utils.UnitVector(x,y);
         }
+    }
 
-        return {
-            x: x,
-            y: y,
-        };
+    get Fire() {
+        if ( this.useMouse ) {
+            return this.mouseIsDown;
+        } else {
+            return this.cursors.left.isDown || this.cursors.right.isDown || this.cursors.up.isDown | this.cursors.down.isDown;
+        }
     }
 
     _ShowVirtualSticks() {
@@ -231,5 +321,39 @@ class Controller {
             this.leftStick.setPosition(x + VIRTUAL_STICK_MAX_DISTANCE * v.x, y + VIRTUAL_STICK_MAX_DISTANCE * v.y);
         }
 
+    }
+
+    _HandleKeyboardEvent(key,type) {
+        if ( type == 'keydown' ) {
+            switch(key) {
+                case 'w':
+                    this.keyDownW = true;
+                    break;
+                case 'a':
+                    this.keyDownA = true;
+                    break;
+                case 's':
+                    this.keyDownS = true;
+                    break;
+                case 'd':
+                    this.keyDownD = true;
+                    break;
+            }
+        } else {
+            switch(key) {
+                case 'w':
+                    this.keyDownW = false;
+                    break;
+                case 'a':
+                    this.keyDownA = false;
+                    break;
+                case 's':
+                    this.keyDownS = false;
+                    break;
+                case 'd':
+                    this.keyDownD = false;
+                    break;
+            }
+        }
     }
 }
