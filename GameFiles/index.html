@@ -9,6 +9,7 @@
     <script type="text/javascript" src="./list_utils.js"></script>
     <script type="text/javascript" src="./utils.js"></script>
     <script type="text/javascript" src="./Player.js"></script>
+    <script type="text/javascript" src="./Zoblins.js"></script>
     <script type="text/javascript" src="./Bullets.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <style>
@@ -23,69 +24,6 @@
             /*height: 100%;*/
             width: 100%;
         }
-
-        /*#gameCanvas {
-            margin: 0 auto;
-        }
-        
-        canvas:-webkit-full-screen {
-            width: 100% !important;
-        }
-
-        canvas:-moz-full-screen {
-            width: 100% !important;
-        }
-
-        canvas:-ms-fullscreen {
-            width: 100% !important;
-        }
-
-        canvas:fullscreen{
-            width: 100% !important;
-        }
-
-        :-webkit-full-screen-document {
-          
-        }
-
-        :-webkit-full-screen:not(:root) {
-          width: 90% !important;
-          float: none !important;
-        }
-        :-webkit-full-screen video {
-          width: 100%;
-        }
-        :-webkit-full-screen .tohide {
-          display: none;
-        }
-        :-moz-full-screen:not(:root) {
-          width: 90% !important;
-          float: none !important;
-        }
-        :-moz-full-screen #fs-inner {
-          display: table-cell;
-          vertical-align: middle;
-        }
-        :-moz-full-screen #fs {
-          width: 90%;
-          margin: auto;
-        }
-        :-moz-full-screen video {
-          width: 100%;
-        }
-        :-moz-full-screen .tohide {
-          display: none;
-        }
-        #gameCanvas:-moz-full-screen {
-          display: table;
-          margin: auto;
-          float: none;
-          width: 100%;
-          height: 100%;
-        }
-        #gameCanvas {
-          float: right;
-        }*/
 
         button {
             color: blue;
@@ -176,7 +114,8 @@
     var phaserGame = new Phaser.Game(config);
 
     var player;
-    var bullets;
+    var bullets,
+        zoblins;
 
     
 
@@ -197,6 +136,11 @@
         this.load.image('tree_green', 'assets/tree_sprite.png');
         this.load.image('tree_purple', 'assets/tree_sprite_02.png');
 
+
+        this.load.spritesheet('zoblin', 'assets/enemy_spritesheet.png',
+            { frameWidth: 114/3, frameHeight: 76/2 }
+        );
+
         this.load.spritesheet('melina', 'assets/Melina.png',
             { frameWidth: 223/4, frameHeight: 336/4 }
         );
@@ -209,8 +153,16 @@
 
     function create () {
 
+        player = new Player(this);
+
         this.obstacles = this.physics.add.staticGroup();
+        this.physics.add.collider(player._sprite, this.obstacles);
+
         this.bullets = this.physics.add.group();
+        bullets = new Bullets(this);
+
+        // this.zoblins = this.physics.add.group();
+        this.zoblins = new Zoblins(this);
         // console.log(this.bullets);
         // platforms.create(400, 568, 'ground').setScale(2).refreshBody;
 
@@ -218,8 +170,7 @@
         // platforms.create(50, 250, 'ground');
         // platforms.create(750, 220, 'ground');
 
-        player = new Player(this);
-        bullets = new Bullets(this);
+        
         
         lastTime = this.time.now;
 
@@ -246,7 +197,7 @@
 
 //        player.body.setGravityY(300);
 
-        this.physics.add.collider(player._sprite, this.obstacles);
+        
         // console.log(this);
         // $('canvas')[0].addEventListener('click', goFullscreen);
 
@@ -268,6 +219,7 @@
         lastTime = this.time.now;
         player.Update();
         controller.Update();
+        this.zoblins.Update();
         this.bubble.Update();
         // console.log(game);
         bullets.Update();

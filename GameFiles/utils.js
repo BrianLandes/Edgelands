@@ -1,9 +1,21 @@
 var utils = this;
 
 /// Takes an optional magnitude to reduce recomputation
-UnitVector = function( x, y, m ) {
+UnitVector = function( x, y, m, verbose = false ) {
 	if ( m==undefined ) {
 		m = Magnitude(x,y);
+	}
+	if ( verbose ) {
+		console.log(x);
+		console.log(y);
+		console.log(m);
+	}
+	if ( m == 0 ) {
+		return {
+			x: 0,
+			y: 0,
+			m: 0
+		};
 	}
 	return {
 		x: x/m,
@@ -18,6 +30,12 @@ Magnitude = function(x,y) {
 
 Distance = function( x1, y1, x2, y2 ) {
 	return Magnitude( x2 - x1, y2 - y1 );
+}
+
+DistanceSquared = function( x1, y1, x2, y2 ) {
+	let u = x2 - x1;
+	let v = y2 - y1;
+	return u*u + v*v;
 }
 
 GetAngle = function( x, y ) {

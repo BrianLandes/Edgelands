@@ -174,7 +174,7 @@ class Controller {
     get AimAxis() {
         if ( this.useMouse ) {
 
-            let v = this.game.cameras.main.getWorldPoint(this.game.input.x,this.game.input.y);
+            let v = this.game.cameras.main.getWorldPoint(this.game.input.x,this.game.input.y+BULLET_SPAWN_Y_OFFSET);
             let px = player.x;
             let py = player.y;
 

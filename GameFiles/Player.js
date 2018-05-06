@@ -58,6 +58,9 @@ class Player {
             frameRate: 10,
             repeat: -1
         });
+
+        this.forwardWeight = 3;
+        this.lastEmaForwardVector = { x:0, y: 0 };
     }
 
     get x() {
@@ -97,9 +100,21 @@ class Player {
             }
         }
 
+        // walking or standing still
         this._sprite.anims.isPlaying = m.m !=0;
 
+        // update the depth or z
         this._sprite.depth  = this._sprite.y;
 
+        // try to keep an exponention moving average of the player's approximate forward direction
+        this.lastEmaForwardVector = UnitVector( (m.x * this.forwardWeight + this.lastEmaForwardVector.x ) / (this.forwardWeight + 1),
+                                                (m.y * this.forwardWeight + this.lastEmaForwardVector.y ) / (this.forwardWeight + 1));
+        
+
+    }
+
+    // returns a unit vector representing the approximate average direction the player has recently been moving forward
+    get ForwardVector() {
+        return this.lastEmaForwardVector;
     }
 }

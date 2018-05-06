@@ -1,7 +1,8 @@
 
 var BULLET_SPEED = 600;
-var BULLET_DISTANCE = 1000;
+var BULLET_DISTANCE = 600;
 var BULLET_SPAWN_DISTANCE = 50;
+var BULLET_SPAWN_Y_OFFSET = -30;
 
 class Bullets {
 	constructor(game) {
@@ -24,22 +25,20 @@ class Bullets {
 	        }
 		}
 
-		let buffer = [];
+		list_utils.BeginPurge();
 
 		for ( let i = 0; i < this._.length; i ++ ) {
 			let bullet = this._[i];
 			let d = utils.Distance(bullet.x,bullet.y,player.x,player.y);
 			bullet.depth = bullet.y;
-			if ( d > BULLET_DISTANCE ) {
+			if ( d > BULLET_DISTANCE || bullet.isDead ) {
 				bullet.destroy();
-				buffer.push(bullet);
+				list_utils.Purge(bullet);
 			} 
 
 		}
 
-		for( let i = 0; i < buffer.length; i ++ ) {
-			list_utils.Remove(this._,buffer[i]);
-		}
+		list_utils.EndPurge(this._);
 
 	}
 
@@ -49,11 +48,14 @@ class Bullets {
 		let vy = dir.y * BULLET_SPEED + player._sprite.body.velocity.y * 0.5;
 
 
-		let bullet = this.game.bullets.create( x + dir.x * BULLET_SPAWN_DISTANCE, y + dir.y * BULLET_SPAWN_DISTANCE, 'bullet')
+		let bullet = this.game.bullets.create( x + dir.x * BULLET_SPAWN_DISTANCE, y + dir.y * BULLET_SPAWN_DISTANCE + BULLET_SPAWN_Y_OFFSET, 'bullet')
 			.setVelocity(vx, vy);
 		bullet.rotation = utils.GetAngle(dir.x,dir.y);
-		bullet.body.setCircle(10);
+		// bullet.body.setCircle(30);
+		bullet.body.setCircle(ZOBLIN_RADIUS);
+		bullet.body.setOffset(-ZOBLIN_RADIUS*0.5 + bullet.originX * bullet.width,-ZOBLIN_RADIUS*0.5+ bullet.originY * bullet.height);
 		bullet.depth = bullet.y;
+		bullet.isDead = false;
 
 		this._.push(bullet);
 		// console.log(dir);

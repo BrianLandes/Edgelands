@@ -11,3 +11,25 @@ list_utils.Remove = function(list, object) {
 		}
 	}
 };
+
+var _purgeBuffer = [];
+var _purgeI = 0;
+
+BeginPurge = function() {
+	_purgeBuffer = [];
+	_purgeI = 0;
+}
+
+Purge = function(item) {
+	_purgeBuffer.push(item);
+}
+
+EndPurge = function(list) {
+	for( let i = 0; i < _purgeBuffer.length; i ++ ) {
+		list_utils.Remove(list,_purgeBuffer[i]);
+	}
+}
+
+ForEachStart = function(list, itemRef) {
+	itemRef = list[_purgeI++];
+}
