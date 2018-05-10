@@ -1,7 +1,7 @@
 
 var list_utils = this;
 
-list_utils.Remove = function(list, object) {
+Remove = function(list, object) {
 
 	for( let i = 0; i < list.length; i ++ ) {
 		var element = list[i];
@@ -12,12 +12,15 @@ list_utils.Remove = function(list, object) {
 	}
 };
 
+RemoveAt = function(list, index) {
+
+	list.splice(index,1);
+};
+
 var _purgeBuffer = [];
-var _purgeI = 0;
 
 BeginPurge = function() {
 	_purgeBuffer = [];
-	_purgeI = 0;
 }
 
 Purge = function(item) {
@@ -30,6 +33,16 @@ EndPurge = function(list) {
 	}
 }
 
-ForEachStart = function(list, itemRef) {
-	itemRef = list[_purgeI++];
+var _preserveBuffer = [];
+
+BeginPreserve = function() {
+	_preserveBuffer = [];
+}
+
+Preserve = function(item) {
+	_preserveBuffer.push(item);
+}
+
+EndPreserve = function() {
+	return _preserveBuffer;
 }

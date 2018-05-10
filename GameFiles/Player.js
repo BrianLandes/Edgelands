@@ -1,21 +1,32 @@
 
 
 
-var MOVE_SPEED = 400;
-var PLAYER_SIZE = 45;
+var MOVE_SPEED = 500;
+var PLAYER_SIZE = 28;
 
 class Player {
     constructor( game ) {
         this.game = game;
 
-        this._sprite = this.game.physics.add.sprite(700,350, 'melina');
-        this._sprite.setOrigin(0.5,0.9);
+        this._sprite = this.game.matter.add.sprite(700,350, 'melina');
+        
 
-        this._sprite.body.setCircle(PLAYER_SIZE);
+        console.log(this._sprite);
+
+        this._sprite.setCircle(PLAYER_SIZE);
+        this._sprite.setFixedRotation(0);
+        this._sprite.setOrigin(0.5,0.9);
+        // this._sprite.body.setOffset(PLAYER_SIZE*0.5 - this._sprite.width * this._sprite.originX, -PLAYER_SIZE*0.5);
+        // this._sprite.body.updateCenter();
 
         this.game.cameras.main.startFollow(this._sprite);
 
         this.graphics = this.game.make.graphics();
+
+        this.physicsCategory = this.game.matter.world.nextCategory();
+
+        this._sprite.setCollisionCategory(this.physicsCategory);
+        // tree.setCollidesWith([player.physicsCategory]);
 
         this.game.anims.create({
             key: 'left',
@@ -71,16 +82,17 @@ class Player {
         return this._sprite.y;
     }
 
-    Update() {
+    Update(deltaTime) {
         let m = controller.MoveAxis;
 
-        this._sprite.setVelocityX( MOVE_SPEED * m.x );
-        this._sprite.setVelocityY( MOVE_SPEED * m.y );
+        this._sprite.setVelocityX( MOVE_SPEED * m.x * deltaTime );
+        this._sprite.setVelocityY( MOVE_SPEED * m.y * deltaTime );
+        this._sprite.body.isSleeping = false;
 
         this.graphics.clear();
         this.graphics.depth = this._sprite.y - 1;
         this.graphics.alpha = 0.5;
-        this.graphics.fillCircle(this._sprite.x,this._sprite.y,20);
+        this.graphics.fillCircle(this._sprite.body.position.x,this._sprite.body.position.y,this._sprite.body.circleRadius);
 
         let v = controller.AimAxis;
 

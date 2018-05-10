@@ -23,7 +23,7 @@ class Bubble {
 	constructor(game) {
 		this.game = game;
 		this.players = [];
-		this.gameObjects = [];
+		
 		this.worldPosition = null;
 		this.theme = 'grass_plains';
 		this.radius = 7;
@@ -32,6 +32,9 @@ class Bubble {
 		this.tilesByY = {};
 		this.noise = new SimplexNoise();
 		this.levelGenerator = new LevelGenerator(this);
+
+		
+		// this.graphics = this.game.make.graphics();
 
 	}
 
@@ -120,24 +123,10 @@ class Bubble {
 		}
 	}
 
-	DistanceToClosestPlayer( point ) {
-		let result = 100000000;
-		for( let i = 0; i < this.players.length ; i ++ ) {
-			let player = this.players[i];
-			let x = point.x - player.x;
-			let y = point.y - player.y;
-			let d = x*x + y*y;
-			if ( d < result ) {
-				result = d;
-			}
-		}
-		return Math.sqrt(result) * screenToGrid;
-	}
-
-	Update() {
+	Update(deltaTime) {
 
 		this.UpdateTiles();
-		this.UpdateObjects();
+		
 		this.levelGenerator.Update();
 	}
 
@@ -227,57 +216,6 @@ class Bubble {
 		// this.tilePool.splice(0,b);
 	}
 
-	UpdateObjects() {
-		// console.log(this.gameObjects);
-		for( let i = 0; i < this.gameObjects.length; i++ ) {
-			let gameObject = this.gameObjects[i];
-			let d = this.DistanceToClosestPlayer(gameObject);
-			if  ( d > this.radius * 6 ) {
-				// console.log(gameObject);
-				gameObject.destroy();
-				
-			}
-		}
-	}
-
-	GenerateObstacles( tile ) {
-		// console.log("GenerateObstacles");
-		let tree = this.game.obstacles.create(tile.x, tile.y, 'tree_green');
-
-		let s = tile.type;
-
-        tree.setScale(3 * s);
-        tree.setOrigin(0.5,0.6);
-        tree.body.setCircle(50 * s);
-        tree.body.setOffset(-25 * s + tree.originX * tree.width,-25 * s + tree.originY * tree.height);
-        tree.depth = tree.y;
-
-        tile.obstacles.push( tree );
-        // this.gameObjects.push( tree );
-
-	}
-
-	NewObstacle( x, y, key ) {
-		if ( key==undefined){
-			key = 'tree_green';
-		}
-		let tree = this.game.obstacles.create( x, y, key);
-
-		tree.s = 1 + this.noise.noise(x,y)*0.5;
-
-
-        tree.setScale(3 * tree.s);
-        tree.setOrigin(0.5,0.6);
-        tree.body.setCircle(50 * tree.s);
-        tree.body.setOffset(-25 * tree.s + tree.originX * tree.width,-25 * tree.s + tree.originY * tree.height);
-        tree.depth = tree.y;
-
-        // tile.obstacles.push( tree );
-        this.gameObjects.push( tree );
-
-        return tree;
-
-	}
 
 	RemoveObstacle( tree ) {
 		tree.destroy();

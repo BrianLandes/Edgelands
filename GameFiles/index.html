@@ -89,6 +89,7 @@
         var height = screen.height;
 
     var config = {
+        useTicker: true,
         type: Phaser.AUTO,
         parent: "fs-container",
         canvas: $('canvas')[0],
@@ -96,10 +97,14 @@
         height: height * window.devicePixelRatio,
         // autoResize: true,
         physics: {
-            default: 'arcade',
-            arcade: {
-                gravity: { y: 0 }
-            }
+            default: 'matter',
+            matter: {
+                enableSleeping: true,
+                gravity: { y: 0 },
+                // debug: true,
+                // debugBodyColor: 0xffffff
+                
+            },
         },
         scene: {
             preload: preload,
@@ -126,8 +131,8 @@
 
     var controller;
 
-    var deltaTime,
-        lastTime;
+    // var deltaTime,
+    //     lastTime;
 
     function preload () {
 
@@ -153,79 +158,39 @@
 
     function create () {
 
+        console.log(this);
+
         player = new Player(this);
 
-        this.obstacles = this.physics.add.staticGroup();
-        this.physics.add.collider(player._sprite, this.obstacles);
-
-        this.bullets = this.physics.add.group();
-        bullets = new Bullets(this);
-
-        // this.zoblins = this.physics.add.group();
-        this.zoblins = new Zoblins(this);
-        // console.log(this.bullets);
-        // platforms.create(400, 568, 'ground').setScale(2).refreshBody;
-
-        // platforms.create(600, 400, 'ground');
-        // platforms.create(50, 250, 'ground');
-        // platforms.create(750, 220, 'ground');
-
-        
-        
-        lastTime = this.time.now;
-
-        // console.log(graphics);
-        
-        // let g = this.make.graphics();
-
-
-        // rock.body.updateCenter();
-        // console.log(rock);
-        // console.log(rock.body);
-
-        // g.depth = 99999999;
-        // g.fillCircle(600,400,20);
-
-
-//        player.setBounce(0.2);
-        // player.setCollideWorldBounds(true);
-
-        
-
+        // lastTime = this.time.now;
 
         controller = new Controller(this);
 
-//        player.body.setGravityY(300);
 
-        
-        // console.log(this);
-        // $('canvas')[0].addEventListener('click', goFullscreen);
-
-        // this.input.on('pointerdown', goFullscreen, this);
-
-        
 
         this.bubbles = new Bubbles(this);
-        // console.log(bubbles);
         this.bubble = this.bubbles.Add();
         this.bubble.AddPlayer(player);
 
+        bullets = new Bullets(this);
+
+        this.zoblins = new Zoblins(this);
         
         var el = $('#gameCanvas')[0];
         $('canvas')[0].focus();
     }
-    function update () {
-        deltaTime = (this.time.now - lastTime)/1000;
-        lastTime = this.time.now;
-        player.Update();
-        controller.Update();
-        this.zoblins.Update();
-        this.bubble.Update();
-        // console.log(game);
-        bullets.Update();
+    function update (timestep, deltaTime) {
+        // deltaTime = (this.time.now - lastTime)/1000;
+        // if ( deltaTime > 0 ) {
+            player.Update(deltaTime/1000);
+            controller.Update(deltaTime/1000);
+            this.zoblins.Update(deltaTime/1000);
+            this.bubble.Update(deltaTime/1000);
+            bullets.Update(deltaTime/1000);
+        // }
+        // lastTime = this.time.now;
         
-        // this.cameras.main.scrollX = player.x - game.canvas.width * 0.5;
-        // this.cameras.main.scrollY = player.y - game.canvas.height * 0.5;
+        
     }
         
     

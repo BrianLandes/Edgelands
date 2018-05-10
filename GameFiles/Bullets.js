@@ -1,5 +1,5 @@
 
-var BULLET_SPEED = 600;
+var BULLET_SPEED = 40;
 var BULLET_DISTANCE = 600;
 var BULLET_SPAWN_DISTANCE = 50;
 var BULLET_SPAWN_Y_OFFSET = -30;
@@ -12,9 +12,13 @@ class Bullets {
 		this._fireDelay = 0;
 
 		this._ = [];
+
+		this.physicsGroup = this.game.matter.world.nextGroup(false);
+        this.physicsOptions = { friction: 0.0000001, collisionFilter: { group: [this.physicsGroup, this.game.bubble.levelGenerator.physicsGroup] }, isStatic: false, };
+
 	}
 
-	Update() {
+	Update(deltaTime) {
 		if ( this._fireDelay > 0 ) {
 			this._fireDelay -= deltaTime;
 		} else {
@@ -25,20 +29,22 @@ class Bullets {
 	        }
 		}
 
-		list_utils.BeginPurge();
+		list_utils.BeginPreserve();
 
 		for ( let i = 0; i < this._.length; i ++ ) {
 			let bullet = this._[i];
-			let d = utils.Distance(bullet.x,bullet.y,player.x,player.y);
+			let d = utils.DistanceSquared(bullet.x,bullet.y,player.x,player.y);
 			bullet.depth = bullet.y;
-			if ( d > BULLET_DISTANCE || bullet.isDead ) {
+			if ( d > BULLET_DISTANCE * BULLET_DISTANCE|| bullet.isDead ) {
 				bullet.destroy();
-				list_utils.Purge(bullet);
-			} 
+				
+			} else {
+				list_utils.Preserve(bullet);
+			}
 
 		}
 
-		list_utils.EndPurge(this._);
+		this._ = list_utils.EndPreserve();
 
 	}
 
@@ -47,13 +53,17 @@ class Bullets {
 		let vx = dir.x * BULLET_SPEED + player._sprite.body.velocity.x * 0.5;
 		let vy = dir.y * BULLET_SPEED + player._sprite.body.velocity.y * 0.5;
 
-
-		let bullet = this.game.bullets.create( x + dir.x * BULLET_SPAWN_DISTANCE, y + dir.y * BULLET_SPAWN_DISTANCE + BULLET_SPAWN_Y_OFFSET, 'bullet')
-			.setVelocity(vx, vy);
-		bullet.rotation = utils.GetAngle(dir.x,dir.y);
+		let bullet = this.game.matter.add.sprite( x + dir.x * BULLET_SPAWN_DISTANCE, y + dir.y * BULLET_SPAWN_DISTANCE + BULLET_SPAWN_Y_OFFSET, 'bullet' );
+		// let bullet = this.game.bullets.create( x + dir.x * BULLET_SPAWN_DISTANCE, y + dir.y * BULLET_SPAWN_DISTANCE + BULLET_SPAWN_Y_OFFSET, 'bullet')
+		// 	.setVelocity(vx, vy);
+		
+		// bullet.rotation = utils.GetAngle(dir.x,dir.y);
 		// bullet.body.setCircle(30);
-		bullet.body.setCircle(ZOBLIN_RADIUS);
-		bullet.body.setOffset(-ZOBLIN_RADIUS*0.5 + bullet.originX * bullet.width,-ZOBLIN_RADIUS*0.5+ bullet.originY * bullet.height);
+		bullet.setCircle( 20, this.physicsOptions);
+		bullet.setVelocity(vx,vy);
+		bullet.setFixedRotation();
+		bullet.setRotation( utils.GetAngle(dir.x,dir.y) );
+		// bullet.body.setOffset(-ZOBLIN_RADIUS*0.5 + bullet.originX * bullet.width,-ZOBLIN_RADIUS*0.5+ bullet.originY * bullet.height);
 		bullet.depth = bullet.y;
 		bullet.isDead = false;
 

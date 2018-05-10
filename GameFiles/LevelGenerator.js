@@ -21,11 +21,20 @@ class LevelGenerator {
                 this.last_spawn_position_x = 0;
                 this.last_spawn_position_y = 0;
 
+                this.gameObjects = [];
+
+                this.physicsGroup = this.bubble.game.matter.world.nextGroup(false);
+                this.physicsCategory = this.bubble.game.matter.world.nextCategory();
+                // this.physicsOptions = { friction: 0.0000001, collisionFilter: { category: this.physicsCategory}, isStatic: true, };
+                // this.physicsOptions = { friction: 0.0000001, collisionFilter: { group: this.physicsGroup }, isStatic: true, };
+                this.physicsOptions = { friction: 0.0000001, collisionFilter: { group: this.physicsGroup }, isStatic: true, };
+
 	}
 
         Update() {
                 this.Scatter();
                 this.Snake();
+                this.UpdateObjects();
         }
 
         Scatter() {
@@ -47,7 +56,7 @@ class LevelGenerator {
                         let newx = player.x + r.x;
                         let newy = player.y + r.y;
 
-                        let tree = this.bubble.NewObstacle( newx, newy);
+                        let tree = this.NewObstacle( newx, newy);
 
                         if (this.last_spawned_obstacle == null || Math.random()>0.9) {
                                 this.last_spawned_obstacle = tree
@@ -64,7 +73,7 @@ class LevelGenerator {
         Snake() {
                 let player = this.bubble.players[0];
                 // elif self.type is SNAKE:
-                if (this.last_spawned_obstacle == null ) {
+                if (this.last_spawned_obstacle == undefined || this.last_spawned_obstacle.body==undefined || this.last_spawned_obstacle.body.position==undefined ) {
                     return;
                 }
                 // get the distance between the player and the last spawned object
@@ -112,7 +121,7 @@ class LevelGenerator {
                         // console.log(newx);
                         // tree.x = newx;
                         // tree.y = newy;
-                        let tree = this.bubble.NewObstacle( newx, newy, 'tree_purple');
+                        let tree = this.NewObstacle( newx, newy, 'tree_purple');
                         // tree.depth = tree.y;
                         // console.log(tree);
                         // tree.body.setCircle(50 * tree.s);
@@ -123,5 +132,74 @@ class LevelGenerator {
                         this.snake_vy = newy - this.last_spawned_obstacle.y;
                         this.last_spawned_obstacle = tree;
                 }
+        }
+
+        DistanceToClosestPlayer( point ) {
+                return utils.DistanceSquared(point.x,point.y,player.x,player.y);
+                // let result = 100000000;
+                // for( let i = 0; i < this.players.length ; i ++ ) {
+                //         let player = this.players[i];
+                //         let x = point.x - player.x;
+                //         let y = point.y - player.y;
+                //         let d = x*x + y*y;
+                //         if ( d < result ) {
+                //                 result = d;
+                //         }
+                // }
+                // return Math.sqrt(result) * screenToGrid;
+        }
+
+        UpdateObjects() {
+                // this.graphics.clear();
+                // this.graphics.alpha = 0.5;
+
+                list_utils.BeginPreserve();
+
+                // console.log(this.gameObjects);
+                for( let i = 0; i < this.gameObjects.length; i++ ) {
+                        let gameObject = this.gameObjects[i];
+                        let d = this.DistanceToClosestPlayer(gameObject);
+                        if  ( d > this.scatter_spawning_distance * this.scatter_spawning_distance * 4 ) {
+                                // console.log(gameObject);
+                                gameObject.destroy();
+                                
+                        } else {
+                                list_utils.Preserve(gameObject);
+                        // this.graphics.depth = gameObject.y - 1;
+                       
+                        // this.graphics.fillCircle( gameObject.body.position.x, gameObject.body.position.y, gameObject.body.circleRadius);
+                        }
+                }
+                this.gameObjects = list_utils.EndPreserve();
+
+                // console.log(this.gameObjects.length);
+        }
+
+        NewObstacle( x, y, key ) {
+                if ( key==undefined){
+                        key = 'tree_green';
+                }
+                
+                var tree = this.bubble.game.matter.add.sprite(x, y, key );
+
+                tree.s = 1 + this.bubble.noise.noise(x,y)*0.5;
+
+
+                tree.setScale(3 * tree.s);
+                
+                tree.setCircle(60 * tree.s, this.physicsOptions);
+                tree.setCollisionCategory(this.physicsCategory);
+                tree.setCollidesWith([player.physicsCategory,this.bubble.game.zoblins.physicsCategory]);
+                // tree.setStatic(true);
+                // tree.setCollisionGroup(this.physicsGroup);
+                tree.setOrigin(0.5,0.7);
+                // tree.body.setOffset(-25 * tree.s + tree.originX * tree.width,-25 * tree.s + tree.originY * tree.height);
+                tree.depth = tree.y;
+
+                // tile.obstacles.push( tree );
+                this.gameObjects.push( tree );
+
+                return tree;
+
         }
 }
