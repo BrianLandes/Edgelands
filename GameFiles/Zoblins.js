@@ -13,6 +13,24 @@ class Zoblins {
 		// this.game.physics.add.collider(this.group, this.group);
 		// this.game.physics.add.collider(this.game.obstacles, this.group);
 		// this.game.physics.add.overlap(this.game.bullets, this.group, this.HitByBullet);
+		this.game.matter.world.on('collisionstart', function (event, bodyA, bodyB) {
+			if ( bodyA.gameObject.isZomblin ) {
+				if ( bodyB.gameObject.isBullet ) {
+					this.HitByBullet( bodyB.gameObject, bodyA.gameObject);
+					console.log("is bullet");
+				}
+				console.log("is zoblin");
+			} else if ( bodyB.gameObject.isZomblin ) {
+				if ( bodyA.gameObject.isBullet ) {
+					this.HitByBullet( bodyA.gameObject, bodyB.gameObject);
+					console.log("is bullet B");
+				}
+				console.log("is zoblin B");
+			}
+	        // bodyA.gameObject.setTint(0xff0000);
+	        // bodyB.gameObject.setTint(0x00ff00);
+
+	    }, this);
 		this.spawnRate = 2.3;
 
 		this._spawnDelay = 0;
@@ -124,6 +142,7 @@ class Zoblins {
 		}
 
 		zoblin.flank = Math.random() * 2 - 1;
+		zoblin.isZomblin = true;
 
 		
 		zoblin.anims.play('zoblinRun', true);
@@ -133,7 +152,7 @@ class Zoblins {
 		zoblin.setCircle(ZOBLIN_RADIUS);
 		zoblin.setOrigin(0.5,0.6);
 		zoblin.setCollisionCategory(this.physicsCategory);
-        zoblin.setCollidesWith([player.physicsCategory,this.physicsCategory,this.game.bubble.levelGenerator.physicsCategory]);
+        zoblin.setCollidesWith([player.physicsCategory,this.physicsCategory,this.game.bubble.levelGenerator.physicsCategory, bullets.physicsCategory]);
         zoblin.setFixedRotation();
 		// zoblin.body.setOffset(-ZOBLIN_RADIUS*0.5 + zoblin.originX * zoblin.width,-ZOBLIN_RADIUS*0.5+ zoblin.originY * zoblin.height);
 		zoblin.depth = zoblin.y;

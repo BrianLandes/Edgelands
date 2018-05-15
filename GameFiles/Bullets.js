@@ -13,7 +13,8 @@ class Bullets {
 
 		this._ = [];
 
-		this.physicsGroup = this.game.matter.world.nextGroup(false);
+		this.physicsCategory = this.game.matter.world.nextCategory();
+		this.physicsGroup = this.game.matter.world.nextGroup(true);
         this.physicsOptions = { friction: 0.0000001, collisionFilter: { group: [this.physicsGroup, this.game.bubble.levelGenerator.physicsGroup] }, isStatic: false, };
 
 	}
@@ -63,9 +64,12 @@ class Bullets {
 		bullet.setVelocity(vx,vy);
 		bullet.setFixedRotation();
 		bullet.setRotation( utils.GetAngle(dir.x,dir.y) );
+		bullet.setCollisionCategory(this.physicsCategory);
+		// bullet.setCollidesWith([this.physicsCategory,this.game.bubble.levelGenerator.physicsCategory, bullets.physicsCategory]);
 		// bullet.body.setOffset(-ZOBLIN_RADIUS*0.5 + bullet.originX * bullet.width,-ZOBLIN_RADIUS*0.5+ bullet.originY * bullet.height);
 		bullet.depth = bullet.y;
 		bullet.isDead = false;
+		bullet.isBullet = true;
 
 		this._.push(bullet);
 		// console.log(dir);

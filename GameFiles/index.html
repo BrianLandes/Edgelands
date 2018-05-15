@@ -101,8 +101,8 @@
             matter: {
                 enableSleeping: true,
                 gravity: { y: 0 },
-                // debug: true,
-                // debugBodyColor: 0xffffff
+                debug: true,
+                debugBodyColor: 0xffffff
                 
             },
         },
@@ -166,6 +166,15 @@
 
         controller = new Controller(this);
 
+        // console.log(phaserGame.input);
+        // this.input.on('pointermove', function (pointer) {
+
+        //     if (pointer.isDown)
+        //     {
+        //         console.log(pointer);
+        //     }
+
+        // }, this);
 
 
         this.bubbles = new Bubbles(this);
